@@ -9,21 +9,31 @@ const refs = {
   seconds: document.querySelector('span[data-seconds]'),
 }
 
+const updateClockFace = ({ days, hours, minutes, seconds }) => {
+    refs.days.textContent = `${days}`;
+    refs.hours.textContent = `${hours}`;
+    refs.minutes.textContent = `${minutes}`;
+    refs.seconds.textContent = `${seconds}`;
+};
+
+let isTimerGenerated = false;
+
 refs.startBtn.setAttribute('disabled', '');
 
 class Timer {
-  constructor({ pickedTime }) {
+  constructor({ pickedTime }, timeRender) {
     this.pickedTime = pickedTime;
     this.deltaTime = pickedTime - Date.now();
     this.isActive = false;
     this.intervalId = null;
+    this.timeRender = timeRender;
 
     this.onInit();
   }
 
   onInit() {
     const startTime = this.convertMs(this.deltaTime);
-    this.updateClockFace(startTime);
+    this.timeRender(startTime);
   }
 
   start() {
@@ -35,7 +45,7 @@ class Timer {
 
     this.intervalId = setInterval(() => {
       const convertetTime = this.convertMs(this.deltaTime);
-      this.updateClockFace(convertetTime);
+      this.timeRender(convertetTime);
       this.deltaTime -= 1000;
       if (this.deltaTime <= 0) {
         clearInterval(this.intervalId);
@@ -44,12 +54,6 @@ class Timer {
     }, 1000);
   }
 
-  updateClockFace ({ days, hours, minutes, seconds }) {
-    refs.days.textContent = `${days}`;
-    refs.hours.textContent = `${hours}`;
-    refs.minutes.textContent = `${minutes}`;
-    refs.seconds.textContent = `${seconds}`;
-  };
 
   addLeadingZero (value) {
     return String(value).padStart(2, '0');
@@ -80,21 +84,27 @@ const options = {
   onClose(selectedDates) {
     const pickedTime = selectedDates[0].getTime();
 
-    if (pickedTime - Date.now() <= 0) {
-      window.alert("Please choose a date in the future");
-      return;
+    //перевіряє, чи немає ще таймеру
+    if (!isTimerGenerated) {
+      if (pickedTime - Date.now() <= 0) {
+        window.alert("Please choose a date in the future");
+        return;      
     } else {
 
-      // тут ствоюємо екземпляр класа Timer
+      // ствоює таймер
       const timer = new Timer({
         pickedTime: pickedTime,
-      });
+      }, updateClockFace);
+      
+      // таймер створений
+      isTimerGenerated = true;
 
-      // активуємо кнопку старт
+      // активує кнопку старт
       refs.startBtn.removeAttribute('disabled');
 
       // запускає метод старт по кліку
       refs.startBtn.addEventListener('click', timer.start.bind(timer));
+    }
     }
   },
 };
