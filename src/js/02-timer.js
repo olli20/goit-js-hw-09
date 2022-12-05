@@ -11,10 +11,66 @@ const refs = {
 
 refs.startBtn.setAttribute('disabled', '');
 
-let deltaTime = null;
-let isActive = false;
-let intervalId = null;
+class Timer {
+  constructor({ pickedTime }) {
+    this.pickedTime = pickedTime;
+    this.deltaTime = pickedTime - Date.now();
+    this.isActive = false;
+    this.intervalId = null;
 
+    this.onInit();
+  }
+
+  onInit() {
+    const startTime = this.convertMs(this.deltaTime);
+    this.updateClockFace(startTime);
+  }
+
+  start() {
+    if (this.isActive) {
+      return;
+    }
+    
+    this.isActive = true;
+
+    this.intervalId = setInterval(() => {
+      const convertetTime = this.convertMs(this.deltaTime);
+      this.updateClockFace(convertetTime);
+      this.deltaTime -= 1000;
+      if (this.deltaTime <= 0) {
+        clearInterval(this.intervalId);
+      return;
+    }
+    }, 1000);
+  }
+
+  updateClockFace ({ days, hours, minutes, seconds }) {
+    refs.days.textContent = `${days}`;
+    refs.hours.textContent = `${hours}`;
+    refs.minutes.textContent = `${minutes}`;
+    refs.seconds.textContent = `${seconds}`;
+  };
+
+  addLeadingZero (value) {
+    return String(value).padStart(2, '0');
+  }
+
+  convertMs(ms) {
+      const second = 1000;
+      const minute = second * 60;
+      const hour = minute * 60;
+      const day = hour * 24;
+
+      const days = this.addLeadingZero(Math.floor(ms / day));
+      const hours = this.addLeadingZero(Math.floor((ms % day) / hour));
+      const minutes = this.addLeadingZero(Math.floor(((ms % day) % hour) / minute));
+      const seconds = this.addLeadingZero(Math.floor((((ms % day) % hour) % minute) / second));
+
+      return { days, hours, minutes, seconds };
+  };
+}
+
+// налаштування для датапікера
 const options = {
   enableTime: true,
   time_24hr: true,
@@ -22,130 +78,26 @@ const options = {
   minuteIncrement: 1,
 
   onClose(selectedDates) {
-    const currentTime = Date.now();
-    const choosedTime = selectedDates[0].getTime();
-    deltaTime = choosedTime - currentTime;
-    console.log('deltaTime: ', deltaTime);
+    const pickedTime = selectedDates[0].getTime();
 
-    if (deltaTime <= 0) {
+    if (pickedTime - Date.now() <= 0) {
       window.alert("Please choose a date in the future");
-      refs.startBtn.setAttribute('disabled', '');
       return;
     } else {
-      console.log(convertMs(deltaTime));
-      const convertetTime = convertMs(deltaTime);
-      updateClockFace(convertetTime);
+
+      // тут ствоюємо екземпляр класа Timer
+      const timer = new Timer({
+        pickedTime: pickedTime,
+      });
+
+      // активуємо кнопку старт
       refs.startBtn.removeAttribute('disabled');
+
+      // запускає метод старт по кліку
+      refs.startBtn.addEventListener('click', timer.start.bind(timer));
     }
   },
 };
 
-refs.startBtn.addEventListener('click', () => {
-  if (isActive) {
-    return;
-  }
-  
-  isActive = true;
-
-  intervalId = setInterval(() => {
-
-    const convertetTime = convertMs(deltaTime);
-    updateClockFace(convertetTime);
-    deltaTime -= 1000;
-    if (deltaTime <= 0) {
-      clearInterval(intervalId);
-    return;
-  }
-
-  }, 1000);
-});
-
+// підключає датапікер
 flatpickr("#datetime-picker", options);
-
-const updateClockFace = ({ days, hours, minutes, seconds }) => {
-  refs.days.textContent = `${days}`;
-  refs.hours.textContent = `${hours}`;
-  refs.minutes.textContent = `${minutes}`;
-  refs.seconds.textContent = `${seconds}`;
-};
-
-function addLeadingZero (value) {
-    return String(value).padStart(2, '0');
-};
-
-function convertMs(ms) {
-  // Number of milliseconds per unit of time
-  const second = 1000;
-  const minute = second * 60;
-  const hour = minute * 60;
-  const day = hour * 24;
-
-  // Remaining days
-  const days = addLeadingZero(Math.floor(ms / day));
-  // Remaining hours
-  const hours = addLeadingZero(Math.floor((ms % day) / hour));
-  // Remaining minutes
-  const minutes = addLeadingZero(Math.floor(((ms % day) % hour) / minute));
-  // Remaining seconds
-  const seconds = addLeadingZero(Math.floor((((ms % day) % hour) % minute) / second));
-
-  return { days, hours, minutes, seconds };
-};
-
-
-// const updateClockFace = ({ hours, mins, secs }) => {
-//     refs.clockface.textContent = `${hours}:${mins}:${secs}`;
-// };
-
-// class Timer {
-//     constructor({ onTick }, ) {
-//         this.intervalId = null;
-//         this.isStarted = false;
-//         this.onTick = onTick;
-
-//         this.init();
-//     }
-
-//     init() {
-//         const time = this.getTimeComponents(0);
-//         this.onTick(time);
-//     }
-    
-//     start() {
-//         if (this.isStarted) {
-//             return;
-//         };
-
-//         const startTime = Date.now();
-//         this.isStarted = true;
-
-//         this.intervalId = setInterval(() => {
-//             const currentTime = Date.now();
-//             const deltaTime = currentTime - startTime;
-//             const time = this.getTimeComponents(deltaTime);
-            
-//             this.onTick(time);
-//         }, 1000);
-//     }
-
-//     stop() {
-//         clearInterval(this.intervalId);
-//         this.isStarted = false;
-//         const time = this.getTimeComponents(0);
-//         this.onTick(time);
-//     }
-
-//     getTimeComponents(time) {
-//         const hours = this.pad(Math.floor((time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
-//         const mins = this.pad(Math.floor((time % (1000 * 60 * 60)) / (1000 * 60)));
-//         const secs = this.pad(Math.floor((time % (1000 * 60)) / 1000));
-
-//         return { hours, mins, secs };
-//     }
-
-//     pad(value) {
-//         return String(value).padStart(2, '0');
-//     }
-
-// };
-
