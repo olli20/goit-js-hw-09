@@ -4,14 +4,12 @@ function createPromise(position, delay) {
   return promise = new Promise((resolve, reject) => {
     setTimeout(() => {
       if (shouldResolve) {
-        resolve(`✅ Fulfilled promise ${position} in ${delay}ms`);
+        resolve({ position, delay });
       } else {
-        reject(`❌ Rejected promise ${position} in ${delay}ms`);
+        reject({ position, delay });
       }
     }, delay);
-  
   });
-
 };
 
 const refs = {
@@ -21,23 +19,23 @@ const refs = {
 refs.form.addEventListener('submit', (event) => {
   event.preventDefault();
 
-  // забираємо значення з форми
+  // забрати значення з форми
   const {
-    elements: { delay, step, amount }
+        elements: { delay, step, amount }
   } = event.currentTarget;
-
-  let initDelay = Number(delay.value);
+  
+  let currentDelay = Number(delay.value);
   const delayStep = Number(step.value);
-  const amountOfPromises = Number(amount.value);
+  const amountOfPromises = amount.value;
   
   // генерувати проміси
-  for (position = 1; position <= amountOfPromises; position += 1, initDelay += delayStep) {
-    createPromise(position, initDelay)
-      .then((succes) => {
-        console.log(succes);
+  for (let position = 1; position <= amountOfPromises; position += 1, currentDelay += delayStep) {
+    createPromise(position, currentDelay)
+      .then(({ position, delay }) => {
+        console.log(`✅ Fulfilled promise ${position} in ${delay}ms`); 
       })
-      .catch((error) => {
-        console.log(error);
+      .catch(({ position, delay }) => {
+        console.log(`❌ Rejected promise ${position} in ${delay}ms`);
       });
-  }
+  };
 });
