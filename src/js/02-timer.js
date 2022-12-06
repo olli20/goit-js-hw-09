@@ -10,10 +10,10 @@ const refs = {
 }
 
 const updateClockFace = ({ days, hours, minutes, seconds }) => {
-    refs.days.textContent = `${days}`;
-    refs.hours.textContent = `${hours}`;
-    refs.minutes.textContent = `${minutes}`;
-    refs.seconds.textContent = `${seconds}`;
+  refs.days.textContent = `${days}`;
+  refs.hours.textContent = `${hours}`;
+  refs.minutes.textContent = `${minutes}`;
+  refs.seconds.textContent = `${seconds}`;
 };
 
 let isTimerGenerated = false;
@@ -54,7 +54,6 @@ class Timer {
     }, 1000);
   }
 
-
   addLeadingZero (value) {
     return String(value).padStart(2, '0');
   }
@@ -89,23 +88,23 @@ const options = {
       if (pickedTime - Date.now() <= 0) {
         window.alert("Please choose a date in the future");
         return;      
-    } else {
+      } else {
 
-      // ствоює таймер
-      const timer = new Timer({
-        pickedTime: pickedTime,
-      }, updateClockFace);
-      
-      // таймер створений
-      isTimerGenerated = true;
+        // ствоює таймер
+        const timer = new Timer({
+          pickedTime: pickedTime,
+        }, updateClockFace);
+        
+        // таймер створений
+        isTimerGenerated = true;
 
-      // активує кнопку старт
-      refs.startBtn.removeAttribute('disabled');
+        // активує кнопку старт
+        refs.startBtn.removeAttribute('disabled');
 
-      // запускає метод старт по кліку
-      refs.startBtn.addEventListener('click', timer.start.bind(timer));
-    }
-    }
+        // запускає метод старт по кліку
+        refs.startBtn.addEventListener('click', timer.start.bind(timer));
+      };
+    };
   },
 };
 
